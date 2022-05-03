@@ -25,7 +25,6 @@ func main() {
 	router.HandleFunc("/posts/", server.getAllHandler).Methods("GET")
 	router.HandleFunc("/post/{id}/", server.getPostHandler).Methods("GET")
 	router.HandleFunc("/post/{id}", server.delPostHandler).Methods("DELETE")
-	router.HandleFunc("/post/{id}", server.delAllPostHandler).Methods("DELETE")
 	router.HandleFunc("/post/{id}/", server.updatePostHandler).Methods("PUT")
 
 	// start server
