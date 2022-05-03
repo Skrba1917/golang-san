@@ -1,4 +1,4 @@
-package projectSAN
+package main
 
 import (
 	"errors"
@@ -7,11 +7,11 @@ import (
 	"net/http"
 )
 
-type postServer struct {
-	data map[string][]*RequestPost // izigrava bazu podataka
+type Service struct {
+	data map[string][]*Config // izigrava bazu podataka
 }
 
-func (ts *postServer) createPostHandler(w http.ResponseWriter, req *http.Request) {
+func (ts *Service) createPostHandler(w http.ResponseWriter, req *http.Request) {
 	contentType := req.Header.Get("Content-Type")
 	mediatype, _, err := mime.ParseMediaType(contentType)
 	if err != nil {
@@ -32,13 +32,13 @@ func (ts *postServer) createPostHandler(w http.ResponseWriter, req *http.Request
 	}
 
 	id := createId()
-	//rt.Id = id
 	ts.data[id] = rt
 	renderJSON(w, rt)
+	w.Write([]byte(id))
 }
 
-func (ts *postServer) getAllHandler(w http.ResponseWriter, req *http.Request) {
-	allTasks := []*RequestPost{}
+func (ts *Service) getAllHandler(w http.ResponseWriter, req *http.Request) {
+	var allTasks []*Config
 	for _, v := range ts.data {
 		allTasks = append(allTasks, v...)
 	}
@@ -46,13 +46,7 @@ func (ts *postServer) getAllHandler(w http.ResponseWriter, req *http.Request) {
 	renderJSON(w, allTasks)
 }
 
-func (ts *postServer) getOneHandler(w http.ResponseWriter, req *http.Request) {
-	allTasks := RequestPost{}
-	renderJSON(w, allTasks)
-
-}
-
-func (ts *postServer) getPostHandler(w http.ResponseWriter, req *http.Request) {
+func (ts *Service) getPostHandler(w http.ResponseWriter, req *http.Request) {
 	id := mux.Vars(req)["id"]
 	task, ok := ts.data[id]
 	if !ok {
@@ -63,7 +57,7 @@ func (ts *postServer) getPostHandler(w http.ResponseWriter, req *http.Request) {
 	renderJSON(w, task)
 }
 
-func (ts *postServer) delPostHandler(w http.ResponseWriter, req *http.Request) {
+func (ts *Service) delPostHandler(w http.ResponseWriter, req *http.Request) {
 	id := mux.Vars(req)["id"]
 	if v, ok := ts.data[id]; ok {
 		delete(ts.data, id)
@@ -72,4 +66,24 @@ func (ts *postServer) delPostHandler(w http.ResponseWriter, req *http.Request) {
 		err := errors.New("key not found")
 		http.Error(w, err.Error(), http.StatusNotFound)
 	}
+}
+
+func (ts *Service) updatePostHandler(w http.ResponseWriter, req *http.Request) {
+	id := mux.Vars(req)["id"]
+
+	rt, err := decodeBody(req.Body)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	ts.data[id] = rt
+	renderJSON(w, rt)
+	w.Write([]byte(id))
+
+	ts.data[id] = append(ts.data[id], rt[0])
+
+}
+
+func (ts *Service) delAllPostHandler(w http.ResponseWriter, req *http.Request) {
 }

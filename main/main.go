@@ -1,4 +1,4 @@
-package projectSAN
+package main
 
 import (
 	"context"
@@ -18,17 +18,18 @@ func main() {
 	router := mux.NewRouter()
 	router.StrictSlash(true)
 
-	server := postServer{
-		data: map[string][]*RequestPost{},
+	server := Service{
+		data: map[string][]*Config{},
 	}
 	router.HandleFunc("/post/", server.createPostHandler).Methods("POST")
 	router.HandleFunc("/posts/", server.getAllHandler).Methods("GET")
-	router.HandleFunc("/post/{id}", server.getOneHandler).Methods("GET")
 	router.HandleFunc("/post/{id}/", server.getPostHandler).Methods("GET")
-	router.HandleFunc("/post/{id}/", server.delPostHandler).Methods("DELETE")
+	router.HandleFunc("/post/{id}", server.delPostHandler).Methods("DELETE")
+	router.HandleFunc("/post/{id}", server.delAllPostHandler).Methods("DELETE")
+	router.HandleFunc("/post/{id}/", server.updatePostHandler).Methods("PUT")
 
 	// start server
-	srv := &http.Server{Addr: "0.0.0.0:8000", Handler: router}
+	srv := &http.Server{Addr: "0.0.0.0:8080", Handler: router}
 	go func() {
 		log.Println("server starting")
 		if err := srv.ListenAndServe(); err != nil {
