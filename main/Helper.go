@@ -23,22 +23,22 @@ func decodeConfigurationBody(r io.Reader) (*Config, error) {
 	dec := json.NewDecoder(r)
 	dec.DisallowUnknownFields()
 
-	var rt *Config
+	var rt Config
 	if err := dec.Decode(&rt); err != nil {
 		return nil, err
 	}
-	return rt, nil
+	return &rt, nil
 }
 
 func decodeGroupBody(r io.Reader) (*Group, error) {
 	dec := json.NewDecoder(r)
 	dec.DisallowUnknownFields()
 
-	var rt *Group
+	var rt Group
 	if err := dec.Decode(&rt); err != nil {
 		return nil, err
 	}
-	return rt, nil
+	return &rt, nil
 }
 
 func renderJSON(w http.ResponseWriter, v interface{}) {
@@ -57,29 +57,46 @@ func createId() string {
 }
 
 const (
-	configs             = "configs/%s/%s/%s"
-	groups              = "groups/%s/%s"
-	configurationDelete = "configs/%s/%s"
+	configurationsId     = "configs/%s"
+	configurationVersion = "configs/%s/%s"
+	allConfigs           = "config"
+
+	allGroups     = "group"
+	groupsId      = "groups/%s"
+	groupsVersion = "groups/%s/%s"
+	groupsLabel   = "groups/%s/%s/%s/"
 )
 
-func generateKeyConfigurations(verzija string, labela string) (string, string) {
+func generateKeyConfiguration(verzija string) (string, string) {
 	id := uuid.New().String()
-	return fmt.Sprintf(configs, id, verzija, labela), id
+	return fmt.Sprintf(configurationVersion, id, verzija), id
 }
 
-func constructKeyConfigurations(id string, verzija string, labela string) string {
-	return fmt.Sprintf(configs, id, verzija, labela)
+func constructKeyIDConfigurations(id string) string {
+	return fmt.Sprintf(configurationsId, id)
 }
 
-func generateKeyGroup(verzija string) (string, string) {
+func constructKeyVersionConfigs(id string, verzija string) string {
+	return fmt.Sprintf(configurationVersion, id, verzija)
+}
+
+//Konfiguracije
+///
+
+///Grupe
+func generateKeyGroup(verzija string, labele string) (string, string) { /////Proveri ovde da li ide mapa stringova ili samo string
 	id := uuid.New().String()
-	return fmt.Sprintf(groups, id, verzija), id
+	return fmt.Sprintf(groupsLabel, id, verzija, labele), id
 }
 
-func constructKeyGroup(id string, verzija string) string {
-	return fmt.Sprintf(groups, id, verzija)
+func constructKeyGroupId(id string) string {
+	return fmt.Sprintf(groupsId, id)
 }
 
-func constructKeyConfigDelete(id string, Version string) string {
-	return fmt.Sprintf(configurationDelete, id, Version)
+func constructKeyGroupVersion(id string, verzija string) string {
+	return fmt.Sprintf(groupsVersion, id, verzija)
+}
+
+func constructKeyGroupLabels(id string, verzija string, labela string) string {
+	return fmt.Sprintf(groupsLabel, id, verzija, labela)
 }
