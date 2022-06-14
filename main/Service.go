@@ -46,7 +46,8 @@ func (ts *Service) createConfigurationHandler(w http.ResponseWriter, req *http.R
 func (ts *Service) getAllConfigurationsHandler(w http.ResponseWriter, req *http.Request) {
 	allTasks, err := ts.store.GetAllConfigurations()
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		nesto := errors.New("Ne postoji!")
+		http.Error(w, nesto.Error(), http.StatusBadRequest)
 		return
 	}
 	renderJSON(w, allTasks)
@@ -85,7 +86,7 @@ func (ts *Service) delConfigurationHandler(w http.ResponseWriter, req *http.Requ
 	if err != nil {
 		errors.New("konfiguracija nije pronadjena, stim nije obrisana!")
 		http.Error(w, err.Error(), http.StatusNotFound)
-		return
+		renderJSON(w, err)
 	}
 
 	renderJSON(w, konf)
@@ -171,7 +172,7 @@ func (ts *Service) delGroupHandler(w http.ResponseWriter, req *http.Request) {
 	group, err := ts.store.DeleteGroup(id, version)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
+		renderJSON(w, err)
 	}
 	renderJSON(w, group)
 }
