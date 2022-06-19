@@ -332,14 +332,30 @@ func (ps *ConfigurationStore) PostGroup(group *Group) (*Group, error) {
 //Izmena postojece grupe
 func (ps *ConfigurationStore) UpdateGroup(group *Group) (*Group, error) {
 	kv := ps.cli.KV()
-	data, err := json.Marshal(group)
+	for _, v := range group.Configs {
 
-	sid := constructKeyGroupVersion(group.Id, group.Version)
+		labela := ""
+		listaStringova := []string{}
+		for k, val := range v {
+			listaStringova = append(listaStringova, k+":"+val)
+		}
+		sort.Strings(listaStringova)
+		for _, v := range listaStringova {
+			labela += v + ";"
+		}
+		labela = labela[:len(labela)-1]
+		sid := constructKeyGroupLabels(group.Id, group.Version, labela) + uuid.New().String()
 
-	p := &api.KVPair{Key: sid, Value: data}
-	_, err = kv.Put(p, nil)
-	if err != nil {
-		return nil, err
+		data, err := json.Marshal(v)
+		if err != nil {
+			return nil, err
+		}
+
+		p := &api.KVPair{Key: sid, Value: data}
+		_, err = kv.Put(p, nil)
+		if err != nil {
+			return nil, err
+		}
 	}
 	return group, nil
 }
